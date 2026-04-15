@@ -1,0 +1,435 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <title>SaigicWeb - Etat des Receptions</title>
+    <link href="/Content/bootstrap3/css/bootstrap.css" rel="stylesheet"/>
+<link href="/Content/jquery-ui.css" rel="stylesheet"/>
+<link href="/Content/datepicker.css" rel="stylesheet"/>
+<link href="/Content/DataTables-1.10.1/css/jquery.dataTables.css" rel="stylesheet"/>
+<link href="/Content/bootstrap-dialog/css/bootstrap-dialog.css" rel="stylesheet"/>
+<link href="/Content/select2/css/select2.min.css" rel="stylesheet"/>
+<link href="/Content/Site.less" rel="stylesheet"/>
+
+    <script src="/Scripts/modernizr-2.7.1.js"></script>
+
+
+    <!--[if lt IE 9]>
+      <script src="~/Scripts/html5shiv.js" type="text/javascript"></script>
+      <script src="~/Scripts/respond.min.js" type="text/javascript"></script>
+     <![endif]-->
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <p class="text-left"><img src="/Content/images/Logo_CCC.jpg" alt="Logo Conseil du Cafe Cacao"/></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="navbar navbar-inverse navbar-static-top">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="/">SaigicWeb</a>
+                </div>
+                    <div class="navbar-collapse collapse">
+
+                        <ul class="nav navbar-nav">
+
+
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">ACHATS <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+
+                                            <li><a href="/Site/Liste">D&#233;signation Sites de Livraison</a></li>
+                                            <li><a href="/Pesee/ConnaissementValidation">Validation des connaissements</a></li>
+                                            <li><a href="/Pesee/ValidationExportateur">Validation des pes&#233;es</a></li>
+                                            <li><a href="/Pesee/RetourExportateurListe">Retour validation exportateur</a></li>
+                                            <li><a href="/Pesee/DeclarationExportateur">D&#233;claration des achats brousse</a></li>
+                                            <li><a href="/Pesee/FacturePerequationExportateur">Facturation Transport</a></li>
+                                            <li class="divider"></li>
+                                            <li><a href="/MouvementStock/VenteToutVenantListe">Cession Tout-venant</a></li>
+                                            <li><a href="/MouvementStock/AchatToutVenantListe">Achat Tout-venant par cession</a></li>
+
+
+                                </ul>
+                            </li>
+                                <li class="dropdown">
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">LOTS <b class="caret"></b></a>
+                                    <ul class="dropdown-menu">
+                                                                            <li><a href="/Lot">D&#233;claration des Lots Fabriqu&#233;s</a></li>
+                                        <li><a href="/Lot/ScindageIndex">Scindage de Lots</a></li>
+                                        <li class="divider"></li>
+                                        <li><a href="/MouvementStock/DeclarationLothorsnomes">D&#233;claration des Hors-normes</a></li>
+                                        <li><a href="/MouvementStock/VenteLocale">D&#233;claration des Ventes locales</a></li>
+                                        <li><a href="/MouvementStock/Dechets">D&#233;claration des D&#233;chets</a></li>
+                                        <li class="divider"></li>
+                      
+                                        <li class="dropdown-submenu">
+                                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Cessions Loco-Magasins</a>
+                                            <ul class="dropdown-menu">
+                                                <li><a href="/Cession/ExpAchatListe">Achats Loco-magasins</a></li>
+                                                <li class="divider"></li>
+
+                                                    <li><a href="/MouvementStock/VenteListe">Cession de Lots</a></li>
+                                                                                                                                            </ul>
+                                        </li>
+                                        
+                                        <li class="divider"></li>
+                                        <li><a href="/MouvementStock/EtatStock">Etat du Stock</a></li>
+                                    </ul>
+                                </li>
+
+                                <li class="dropdown">
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">EXPORTS <b class="caret"></b></a>
+                                    <ul class="dropdown-menu">
+                                            <li><a href="/Pesee/ExportFeveValidation">Validation des exports(F&#232;ves)</a></li>
+                                            <li><a href="/Pesee/ExportFeveListe">Liste des exports valid&#233;es(F&#232;ves)</a></li>
+                                                                            </ul>
+                                </li>
+
+
+                                <li class="dropdown">
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">RAPPORTS <b class="caret"></b></a>
+                                    <ul class="dropdown-menu">
+                                                                                    <li><a href="/Rapport/EtatReception">Etats des Receptions</a></li>
+                                            <li><a href="/Rapport/EtatCessions">Etats des Cessions de produits</a></li>
+                                                                                    <li><a href="/Rapport/EtatLotFeves">Situation des Lots (F&#232;ves)</a></li>
+                                            <li><a href="/Rapport/EtatExportFeves">Etats des Exports (F&#232;ves)</a></li>
+                                            <li><a href="/Rapport/EtatSyntheseFeves">Etats de Synth&#232;se(F&#232;ves)</a></li>
+                                                                                                                                                
+                                    </ul>
+                                </li>
+
+                        </ul>
+                        
+<form action="/Account/LogOff" class="navbar-right" id="logoutForm" method="post"><input name="__RequestVerificationToken" type="hidden" value="-zLq-9VFOv5JCCUfOdU8PLCpGjzk8umPlErGsMC82f8JkfGXQzO_sAV1gMTyf5YwL1XpF5fMHqYyxnwlyzOh6I4qHZRNcpslCDEpGe8Ymfu9Mui2Pqt_cJwEtB_EWfef0" />        <ul class="nav nav navbar-nav navbar-right">
+            <li class="dropdown">
+                <a href="#" data-toggle="dropdown" class="dropdown-toggle">ASONDO <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                    <li class="dropdown-header"><b>Campagne : 2025 - 2026</b> </li>
+		            <li class="divider"></li>
+                    <li><a href="#">Mon Profil</a></li>
+                     <li><a href="/Home/ChangeCampagne">Changer de Campagne</a></li>
+
+                    <li><a href="/SGAccount/ChangePassword">Changer de mot passe</a></li>
+                    <li class="divider"></li>
+                    <li><a href="javascript:document.getElementById('logoutForm').submit()">Se deconnecter</a></li>
+                </ul>
+            </li>
+        </ul>
+</form>
+                    </div>
+            </div>
+        </div>
+    </header>
+    <div class="container body-content" style="padding-top:5px;min-height:500px;">
+        
+
+
+<div class="page-header">
+    <h2>Etat des Réceptions</h2>
+</div>
+
+<form action="/Rapport/ShowEtatReception?Length=7" class="form-horizontal" data-ajax="true" data-ajax-begin="beginPaging" data-ajax-failure="failurePaging()" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-success="successPaging()" data-ajax-update="#notification" id="FormEtatReception" method="post">    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="control-label col-xs-4">Produit</label>
+                <div class="col-md-8">
+                    <select class="form-control" id="Prdt_Id" name="Prdt_Id"><option value="2">CACAO</option>
+<option value="1">CAFE</option>
+</select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-4">Liste des Etats</label>
+                <div class="col-md-8">
+                    <select id="ddlListeEtat" name="ddlListeEtat" class="form-control" style="width:100%;"></select>
+                </div>
+            </div>
+        </div>
+    </div>
+    <hr />
+    <div class="row">
+        <div class="col-md-3">
+            
+            <div class="form-group">
+                <label for="TypeMvt_Id" class="control-label col-xs-4">Mouvement</label>
+                <div class="col-md-8">
+                    <select class="form-control" id="TypeMvt_Id" name="TypeMvt_Id"><option value="1">ACHAT TOUT-VENANT</option>
+</select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="ddlPort" class="control-label col-xs-4">Port</label>
+                <div class="col-md-8">
+                    <select id="ddlPort" name="ddlPort" class="form-control"></select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="ddlSite" class="control-label col-xs-4">Site</label>
+                <div class="col-md-8">
+                    <select id="ddlSite" name="ddlSite" class="form-control"></select>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                <label for="Periode" class="control-label col-xs-4"><input id="optPeriode" type="checkbox" checked="checked">&nbsp; Période </label>
+                <div class="controls">
+                    <div class="row-fluid">
+                        <div class="col-xs-4" style="padding-right:2px;">
+                            <input type="text" id="DateDebut" name="DateDebut" class="form-control">
+                        </div>
+                        <div class="col-xs-4" style="padding-left: 2px;">
+                            <input type="text" id="DateFin" name="DateFin" class="form-control">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="ddlCCQ" class="control-label col-xs-4">CCQ</label>
+                <div class="col-md-8">
+                    <select id="ddlCCQ" name="ddlCCQ" class="form-control"></select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="Exportateur" class="control-label col-xs-4">Exportateur</label>
+                <div class="col-md-8">
+                    <select id="ddlExportateur" name="ddlExportateur" class="form-control"></select>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                <label for="Fournisseur" class="control-label col-xs-4">Opérateur</label>
+                <div class="col-md-8">
+                    <select id="ddlFournisseur" name="ddlFournisseur" class="form-control"></select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="ddlDepartement" class="control-label col-xs-4">Departement</label>
+                <div class="col-md-8">
+                    <select id="ddlDepartement" name="ddlDepartement"  class="form-control"></select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="Localite" class="control-label col-xs-4">Localité</label>
+                <div class="col-md-8">
+                    <input type="text" id="Localite" name="Localite" class="form-control" />
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                <label for="ddlConformite" class="control-label col-xs-4">Conformité</label>
+                <div class="col-md-8">
+                    <select class="form-control" id="ddlConformite" name="ddlConformite"><option value=""></option>
+<option value="CONFORME">CONFORME</option>
+<option value="CONFORME+REFACTION">CONFORME+REFACTION</option>
+<option value="NON-CONFORME">NON-CONFORME</option>
+</select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="ddlAcceptation" class="control-label col-xs-4">Acceptation</label>
+                <div class="col-md-8">
+                    <select class="form-control" id="ddlAcceptation" name="ddlAcceptation"><option value=""></option>
+<option value="NON-REFOULE">NON-REFOULE</option>
+<option value="REFOULE">REFOULE</option>
+</select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="Periode" class="control-label col-xs-4">APP/DECL. </label>
+                <div class="controls">
+                    <div class="row-fluid">
+                        <div class="col-xs-4" style="padding-right:2px;">
+                            <select class="form-control" id="ddlApprouve" name="ddlApprouve"><option value=""></option>
+<option value="Oui">Oui</option>
+<option value="Non">Non</option>
+</select>
+                        </div>
+                        <div class="col-xs-4" style="padding-left: 2px;">
+                            <select class="form-control" id="ddlDeclare" name="ddlDeclare"><option value=""></option>
+<option value="Oui">Oui</option>
+<option value="Non">Non</option>
+</select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <hr />
+    <div class="form-inline">
+        <input type="submit" class="btn btn-success" value="Aperçu" name="btnApercu" id="btnApercu">
+        <select class="form-control" id="ddlExportType" name="ddlExportType"><option value="PDF">PDF</option>
+<option value="XLS">EXCEL</option>
+</select>
+        <span id="divLoading"></span>
+    </div>
+<br />
+</form>
+
+    </div>
+    <footer>
+        <div id="footer-wrapper">
+            <div class="container">
+                <hr class="small">
+                <div class="row info">
+                    <div class="col-xs-12 col-sm-4">
+                        &copy; 2012 - 2026 SaigicWeb<br />
+                        <a href="http://www.conseilcafecacao.ci" target="_blank">Le Conseil du Café-Cacao</a><br />
+                        Bd Botreau Roussel, Abidjan Plateau Immeuble CAISTAB <br />
+                        Support: 20 20 27 31 - 20 20 27 20
+                        Fax : 20 20 28 14
+                    </div>
+                    <div class="col-xs-12 col-sm-2">
+                        <p>Exportation de Produits Café & Cacao<br /><a href="https://www.cafecacao.ci:2012" target="_blank">SIGEC4</a></p>
+                    </div>
+                    <div class="col-xs-12 col-sm-2">
+                        <p>Données Régionales & Connaissements<br /><a href="https://www.cafecacao.ci:8890/sydore6" target="_blank">SYDORE</a></p>
+                    </div>
+                    <div class="col-xs-12 col-sm-2">
+                        <p>Sacherie & Produits Phytos<br /><a href="https://www.cafecacao.ci:8888" target="_blank">SICOPS</a></p>
+                    </div>
+                    <div class="col-xs-12 col-sm-2">
+                        <p>Analyse & Contrôle Qualité Export<br /><a href="https://www.cafecacao.ci:8001" target="_blank">eCOQUAL/BV</a></p>
+                    </div>
+                </div><!-- /.row -->
+            </div><!-- / .container -->
+        </div><!-- / #footer-wrapper -->
+    </footer>
+    <script src="/Scripts/jquery-1.10.2.js"></script>
+<script src="/Scripts/jquery-2.1.0.js"></script>
+<script src="/Scripts/jquery-ui.js"></script>
+<script src="/Scripts/jquery.validate.js"></script>
+<script src="/Scripts/jquery.validate.unobtrusive.js"></script>
+<script src="/Scripts/jquery.unobtrusive-ajax.js"></script>
+<script src="/Scripts/jquery.numeric.js"></script>
+
+    <script src="/Content/bootstrap3/js/bootstrap.js"></script>
+<script src="/Scripts/DataTables-1.10.1/jquery.dataTables.js"></script>
+<script src="/Scripts/bootbox.js"></script>
+<script src="/Content/bootstrap-dialog/js/bootstrap-dialog.js"></script>
+<script src="/Content/select2/js/select2.full.min.js"></script>
+<script src="/Content/select2/js/i18n/fr.js"></script>
+<script src="/Scripts/respond.js"></script>
+
+    
+    <script src="/Scripts/jquery.validate.js"></script>
+<script src="/Scripts/jquery.validate.unobtrusive.js"></script>
+
+    <script type="text/javascript" src="/Scripts/public/saigic.tools.core.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var ExpCode = '004';
+            if (ExpCode.length = 0 || isNaN(Number(ExpCode))) ExpCode = '';
+            var ligneVide = (ExpCode == '' ? true : 0);
+            var _prdt = $("#Prdt_Id option:selected").val();
+
+            App.fpbChargerComboExportateurs("ddlExportateur", { Exp_Id: ExpCode }, ligneVide);
+            App.fpbChargerComboPorts("ddlPort", null, 1, 1);
+            App.fpbChargerComboSites("ddlSite", null, 1, 1);
+            App.fpbChargerComboConcessionnaires("ddlCCQ", null, true);
+            App.fpbChargerComboDepartements("ddlDepartement", null, true);
+            App.fpbChargerComboFournisseurs("ddlFournisseur", { Search: '', Option: 'AcheteurCooperative' }, true);
+
+            App.fpbChargerComboListeDesEtats("ddlListeEtat", { vppPrdt: _prdt, vppGroupe: 'RECEPTION' }, false);
+
+        });
+
+        $("#Prdt_Id").on('change', function (e) {
+            var _prdt = $("#Prdt_Id option:selected").val();
+            App.fpbChargerComboListeDesEtats("ddlListeEtat", { vppPrdt: _prdt, vppGroupe: 'RECEPTION' }, false);
+        });
+
+        function beginPaging(args) {
+            $("#divLoading").html('<image src="/Content/images/ajax-loader.gif" alt="Chargement, veuillez patienter..." />');
+        }
+
+        function successPaging() {
+            $("#divLoading").html("");
+            window.open("/Rapport/AfficherEtat", '_blank', 'mywindow', 'fullscreen=yes, scrollbars=auto');
+        }
+
+        function failurePaging() {
+            $("#divLoading").html("");
+        }
+
+    </script>
+
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            $(document).ajaxError(function (event, jqxhr, settings, exception) {
+                if (jqxhr.status === 401 || jqxhr.status === 403) {
+                    alert("Désolé, votre session a expiré. Veuillez vous connecter pour continuer !");
+                    window.location.href = "/SGAccount/LogOn";
+                } else {
+                    console.log("Une erreur est survenue sur le serveur !\n\nStatut : " + jqxhr.status + "\n\Erreur : " + exception);
+                }
+            });
+
+            /****blockUI 
+            /*
+            var dontBlock = false;
+            $.blockUI.defaults.baseZ = 10000;
+            $.blockUI.defaults.message = '<h2><img src="/Content/images/ajax-loader.gif" /> Merci de patienter...</h2>';
+            $(document).ajaxStart(function () {
+                if (!dontBlock) {
+                    $.blockUI();
+                }
+            }).ajaxStop($.unblockUI);*/
+
+            bootbox.setDefaults({
+                locale: "fr"
+            });
+
+            /*BootstrapDialog.DEFAULT_TEXTS[BootstrapDialog.TYPE_DEFAULT] = 'Information';
+            BootstrapDialog.DEFAULT_TEXTS[BootstrapDialog.TYPE_INFO] = 'Information';
+            BootstrapDialog.DEFAULT_TEXTS[BootstrapDialog.TYPE_PRIMARY] = 'Information';
+            BootstrapDialog.DEFAULT_TEXTS[BootstrapDialog.TYPE_SUCCESS] = 'Success';
+            BootstrapDialog.DEFAULT_TEXTS[BootstrapDialog.TYPE_WARNING] = 'Warning';
+            BootstrapDialog.DEFAULT_TEXTS[BootstrapDialog.TYPE_DANGER] = 'Danger';
+            BootstrapDialog.DEFAULT_TEXTS['OK'] = 'OK';
+            BootstrapDialog.DEFAULT_TEXTS['CANCEL'] = 'Annuler';
+            BootstrapDialog.DEFAULT_TEXTS['CONFIRM'] = 'Confirmation';*/
+
+            $.validator.methods.date = function (value, element) {
+                if ($.browser.webkit) {
+                    var d = new Date();
+                    return this.optional(element) || !/Invalid|NaN/.test(new Date(d.toLocaleDateString(value)));
+                }
+                else {
+                    return this.optional(element) || !/Invalid|NaN/.test(new Date(value));
+                }
+            };
+
+            $.validator.methods.range = function (value, element, param) {
+                var globalizedValue = value.replace(",", ".");
+                return this.optional(element) || (globalizedValue >= param[0] && globalizedValue <= param[1]);
+            }
+
+            $.validator.methods.number = function (value, element) {
+                return this.optional(element) || /^-?(?:\d+|\d{1,3}(?:[\s\.,]\d{3})+)(?:[\.,]\d+)?$/.test(value);
+            }
+        });
+
+    </script>
+</body>
+</html>

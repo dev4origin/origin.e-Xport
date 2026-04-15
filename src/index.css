@@ -1,0 +1,106 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 14% 98%; /* #F8F9FA */
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 265 31% 44%; /* #6A4C93 */
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 265 31% 44%;
+
+    --radius: 0.5rem;
+
+    /* Custom Spec Colors (Hex fallback for vars usage in config, or defined here) */
+    /* We used direct hex in config for 'action-blue' etc. but let's define vars if needed for consistency. */
+    /* Using Hex directly in root for ease if config refers to var(--action-blue) */
+    --primary-purple: #6A4C93;
+    --action-blue: #1982C4;
+    --success-green: #8AC926;
+    --warning-yellow: #FFCA3A;
+    --danger-red: #FF595E;
+
+    /* Sidebar */
+    --sidebar-background: #ffffff;
+    --sidebar-foreground: #111827;
+    --sidebar-primary: #6A4C93;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #f4f4f5;
+    --sidebar-accent-foreground: #111827;
+    --sidebar-border: #e2e8f0;
+    --sidebar-ring: #6A4C93;
+  }
+
+  .dark {
+    --background: 221 39% 11%; /* #111827 */
+    --foreground: 210 40% 98%;
+
+    --card: 215 28% 17%; /* #1F2937 (Tableaux) */
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 265 31% 44%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 265 31% 44%;
+
+    /* Sidebar Dark */
+    --sidebar-background: #111827;
+    --sidebar-foreground: #f4f4f5;
+    --sidebar-primary: #6A4C93;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #27272a;
+    --sidebar-accent-foreground: #f4f4f5;
+    --sidebar-border: #27272a;
+    --sidebar-ring: #6A4C93;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
