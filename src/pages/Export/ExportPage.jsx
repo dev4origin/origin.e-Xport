@@ -118,7 +118,6 @@ export const ExportPage = () => {
         <div className="flex items-center gap-3">
           <Package size={32} className="text-primary" />
           <div>
-            <h2 className="text-2xl font-bold tracking-tight">Export & Certification</h2>
             <p className="text-muted-foreground">Gestion des lots et audits EUDR (Mass Balance)</p>
           </div>
         </div>

@@ -155,7 +155,6 @@ export const ProcessingPage = () => {
           <Factory size={32} className="text-primary" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Production & Usinage</h2>
           <p className="text-muted-foreground">Transformation des lots bruts en produits semi-finis (Mass Balance)</p>
         </div>
       </div>

@@ -78,8 +78,7 @@ export const profileService = {
         created_at,
         user_profile (
           id,
-          first_name,
-          last_name,
+          full_name,
           email,
           phone_number,
           department
@@ -93,7 +92,7 @@ export const profileService = {
     return data.map(item => ({
       id: item.id, // staff record id
       userId: item.user_profile?.id,
-      name: `${item.user_profile?.first_name || ''} ${item.user_profile?.last_name || ''}`.trim() || 'N/A',
+      name: item.user_profile?.full_name || 'N/A',
       email: item.user_profile?.email || 'N/A',
       role: item.role,
       department: item.user_profile?.department || 'N/A',
@@ -109,6 +108,21 @@ export const profileService = {
       .from('fournisseurs')
       .update(updates)
       .eq('id', orgId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Update the current user's profile (first_name, last_name, etc.)
+   */
+  async updateMyProfile(userId, updates) {
+    const { data, error } = await supabase
+      .from('user_profile')
+      .update(updates)
+      .eq('id', userId)
       .select()
       .single();
 

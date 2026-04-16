@@ -44,6 +44,10 @@
     --warning-yellow: #FFCA3A;
     --danger-red: #FF595E;
 
+    /* Base application solid background over which the floating wrapper sits */
+    --app-bg: #06392f;
+
+
     /* Sidebar */
     --sidebar-background: #ffffff;
     --sidebar-foreground: #111827;
@@ -83,6 +87,8 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 265 31% 44%;
+
+    --app-bg: #06392f;
 
     /* Sidebar Dark */
     --sidebar-background: #111827;

@@ -1,4 +1,4 @@
-import { Building, CheckCircle2, Eye, EyeOff, KeyRound, Loader2, Mail, MapPin, Phone, Save, Shield, User, Users, Zap } from 'lucide-react';
+import { Building, CheckCircle2, Eye, EyeOff, KeyRound, Loader2, LogOut, Mail, MapPin, Phone, Save, Shield, User, Users, Zap } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { DataGrid } from '../../components/shared/DataGrid';
 import { Badge } from '../../components/ui/Badge';
@@ -8,13 +8,19 @@ import { profileService } from '../../services/profileService';
 import { cccAutoFetchService } from '../../services/cccAutoFetchService';
 import { useAuth } from '../../contexts/AuthContext';
 
+
 export const ProfilePage = () => {
-    const { profile: authProfile, profileLoading: authProfileLoading, loading: authLoading } = useAuth();
+    const { profile: authProfile, profileLoading: authProfileLoading, loading: authLoading, logout, refreshProfile } = useAuth();
     const [activeTab, setActiveTab] = useState('org'); // 'org' | 'staff' | 'ccc'
     const [staffList, setStaffList] = useState([]);
     const [isLoadingStaff, setIsLoadingStaff] = useState(false);
     const [isEditingOrg, setIsEditingOrg] = useState(false);
     const [orgForm, setOrgForm] = useState({});
+
+    // Profile name editing
+    const [isEditingName, setIsEditingName] = useState(false);
+    const [nameForm, setNameForm] = useState({ full_name: '' });
+    const [nameSaving, setNameSaving] = useState(false);
 
     // CCC Credentials state
     const [cccForm, setCccForm] = useState({
@@ -35,7 +41,28 @@ export const ProfilePage = () => {
         if (authProfile?.organization) {
             setOrgForm(authProfile.organization);
         }
+        if (authProfile?.user) {
+            setNameForm({
+                full_name: authProfile.user.full_name || ''
+            });
+        }
     }, [authProfile]);
+
+    const handleUpdateName = async () => {
+        if (!authProfile?.user?.id) return;
+        try {
+            setNameSaving(true);
+            await profileService.updateMyProfile(authProfile.user.id, {
+                full_name: nameForm.full_name
+            });
+            await refreshProfile();
+            setIsEditingName(false);
+        } catch (err) {
+            console.error('Failed to update name:', err);
+        } finally {
+            setNameSaving(false);
+        }
+    };
 
     // Load staff list
     useEffect(() => {
@@ -184,11 +211,38 @@ export const ProfilePage = () => {
         <div className="space-y-6 max-w-5xl mx-auto">
             {/* Header Card */}
             <div className="bg-card border border-border rounded-xl p-6 flex flex-col md:flex-row items-center gap-6">
-                <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center text-primary">
-                    <User size={40} />
+                <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center text-primary text-2xl font-bold">
+                    {user.full_name ? user.full_name[0].toUpperCase() : <User size={40} />}
                 </div>
                 <div className="text-center md:text-left flex-1">
-                    <h1 className="text-2xl font-bold">{user.first_name || 'Utilisateur'} {user.last_name || ''}</h1>
+                    {isEditingName ? (
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                            <Input
+                                value={nameForm.full_name}
+                                onChange={e => setNameForm({ full_name: e.target.value })}
+                                placeholder="Votre nom complet"
+                                className="w-64"
+                            />
+                            <div className="flex gap-2">
+                                <Button size="sm" onClick={handleUpdateName} disabled={nameSaving} className="gap-1">
+                                    {nameSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} OK
+                                </Button>
+                                <Button size="sm" variant="ghost" onClick={() => setIsEditingName(false)}>Annuler</Button>
+                            </div>
+                        </div>
+                    ) : (
+                        <h1
+                            className="text-2xl font-bold cursor-pointer hover:text-primary transition-colors group"
+                            onClick={() => setIsEditingName(true)}
+                            title="Cliquez pour modifier votre nom"
+                        >
+                            {user.full_name
+                                ? user.full_name
+                                : <span className="text-muted-foreground italic">Cliquez pour ajouter votre nom</span>
+                            }
+                            <span className="ml-2 text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">✏️</span>
+                        </h1>
+                    )}
                     <p className="text-muted-foreground flex items-center justify-center md:justify-start gap-2 mt-1">
                         <Mail size={16} /> {user.email}
                     </p>
@@ -197,6 +251,13 @@ export const ProfilePage = () => {
                         <Badge variant="outline">{organization?.nom || 'Aucune Organisation'}</Badge>
                     </div>
                 </div>
+                <button
+                    onClick={logout}
+                    className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-destructive border border-destructive/30 rounded-xl hover:bg-destructive/10 transition-colors"
+                >
+                    <LogOut size={16} />
+                    Déconnexion
+                </button>
             </div>
 
             {/* Tabs Navigation */}

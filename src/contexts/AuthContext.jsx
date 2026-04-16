@@ -66,6 +66,19 @@ export const AuthProvider = ({ children }) => {
     if (error) throw error;
   };
 
+  const refreshProfile = async () => {
+    if (!user) return;
+    try {
+      setProfileLoading(true);
+      const profileData = await profileService.getMyProfile(user);
+      setProfile(profileData);
+    } catch (err) {
+      console.error('[AuthContext] Profile refresh failed:', err);
+    } finally {
+      setProfileLoading(false);
+    }
+  };
+
   const value = {
     user,
     session,
@@ -73,7 +86,8 @@ export const AuthProvider = ({ children }) => {
     profileLoading,
     login,
     logout,
-    loading
+    loading,
+    refreshProfile
   };
 
   return (

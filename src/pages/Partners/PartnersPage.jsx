@@ -528,12 +528,28 @@ export const PartnersPage = () => {
         if (!newClientData.nom_client?.trim()) return;
         setClientSaving(true);
         try {
-            await clientService.createClient(newClientData, user?.id);
+            let finalLogoUrl = null;
+            if (newClientData.logoFile) {
+                const myOrgId = await partnerService._getMyOrgId(user?.id);
+                finalLogoUrl = await clientService.uploadClientLogo(newClientData.logoFile, myOrgId);
+            }
+            
+            await clientService.createClient({ 
+                ...newClientData, 
+                logo: finalLogoUrl 
+            }, user?.id);
+            
             await loadClients();
             setNewClientData({});
             setIsAddingClient(false);
         } catch (err) {
             console.error("Client inline save failed", err);
+            const errorMsg = err.message || JSON.stringify(err);
+            if (errorMsg.includes('storage') || err.status === 403) {
+                alert("Erreur de stockage (403): Vérifiez que le bucket 'clients_logos' existe et que les politiques de sécurité sont configurées.");
+            } else {
+                alert("Erreur lors de l'enregistrement du client: " + errorMsg);
+            }
         } finally {
             setClientSaving(false);
         }
@@ -558,12 +574,29 @@ export const PartnersPage = () => {
         if (!newExportContractData.client_id) return;
         setExportContractSaving(true);
         try {
-            await clientService.addExportContract(newExportContractData, user?.id);
+            const myOrgId = await partnerService._getMyOrgId(user?.id);
+            let contractUrl = null;
+            let cvUrl = null;
+
+            if (newExportContractData.contractFile) {
+                contractUrl = await clientService.uploadExportContractFile(newExportContractData.contractFile, myOrgId, 'contract');
+            }
+            if (newExportContractData.cvFile) {
+                cvUrl = await clientService.uploadExportContractFile(newExportContractData.cvFile, myOrgId, 'cv');
+            }
+
+            await clientService.addExportContract({
+                ...newExportContractData,
+                fichier_contrat_url: contractUrl,
+                fichier_cv_url: cvUrl
+            }, user?.id);
+
             await loadExportContracts();
             setNewExportContractData({});
             setIsAddingExportContract(false);
         } catch (err) {
             console.error("Export contract inline save failed", err);
+            alert("Erreur lors de l'enregistrement du contrat export: " + (err.message || JSON.stringify(err)));
         } finally {
             setExportContractSaving(false);
         }
@@ -614,29 +647,55 @@ export const PartnersPage = () => {
 
     const clientColumns = useMemo(() => [
         {
+            accessorKey: 'logo',
+            header: 'Logo',
+            cell: ({ row }) => row.original.logo ? <img src={row.original.logo} alt="Logo" className="h-8 w-auto object-contain rounded" /> : <span className="text-muted-foreground text-[10px] italic">Aucun</span>
+        },
+        {
             accessorKey: 'nom_client',
             header: 'Nom du Client',
             cell: ({ row }) => <span className="font-medium text-foreground">{row.original.nom_client}</span>
         },
         {
-            accessorKey: 'id_rainforest',
-            header: 'ID Rainforest',
-            cell: ({ row }) => <span className="text-muted-foreground font-mono text-xs">{row.original.id_rainforest || '-'}</span>
-        },
-        {
-            accessorKey: 'id_fairtrade',
-            header: 'ID Fairtrade',
-            cell: ({ row }) => <span className="text-muted-foreground font-mono text-xs">{row.original.id_fairtrade || '-'}</span>
-        },
-        {
             accessorKey: 'contact_commercial',
-            header: 'Contact',
-            cell: ({ row }) => <span className="text-muted-foreground">{row.original.contact_commercial || '-'}</span>
+            header: 'Contact Commercial',
+            cell: ({ row }) => (
+                <div className="flex flex-col">
+                    <span className="text-sm font-medium">{row.original.contact_commercial || '-'}</span>
+                    <span className="text-[10px] text-muted-foreground">{row.original.email_contact_commercial || '-'}</span>
+                </div>
+            )
+        },
+        {
+            accessorKey: 'ids_certif',
+            header: 'IDs Certif.',
+            cell: ({ row }) => (
+                <div className="flex flex-col gap-0.5">
+                    <div className="flex items-center gap-1.5">
+                        <Badge variant="outline" className="text-[9px] h-3.5 px-1 py-0 min-w-[50px] justify-center border-green-200 text-green-700 bg-green-50">RAINFOREST</Badge>
+                        <span className="text-[10px] font-mono">{row.original.id_rainforest || '-'}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                        <Badge variant="outline" className="text-[9px] h-3.5 px-1 py-0 min-w-[50px] justify-center border-amber-200 text-amber-700 bg-amber-50">FAIRTRADE</Badge>
+                        <span className="text-[10px] font-mono">{row.original.id_fairtrade || '-'}</span>
+                    </div>
+                </div>
+            )
+        },
+        {
+            accessorKey: 'responsable_durabilite',
+            header: 'Resp. Durabilité',
+            cell: ({ row }) => (
+                <div className="flex flex-col">
+                    <span className="text-sm font-medium">{row.original.nom_responsable_durabilite || '-'}</span>
+                    <span className="text-[10px] text-muted-foreground">{row.original.email_responsable_durabilite || '-'}</span>
+                </div>
+            )
         },
         {
             accessorKey: 'adresse',
             header: 'Adresse',
-            cell: ({ row }) => <span className="text-muted-foreground">{row.original.adresse || '-'}</span>
+            cell: ({ row }) => <span className="text-muted-foreground text-xs">{row.original.adresse || '-'}</span>
         }
     ], []);
 
@@ -644,40 +703,102 @@ export const PartnersPage = () => {
         {
             accessorKey: 'client_id',
             header: 'Client',
-            cell: ({ row }) => <span className="font-medium text-foreground">{row.original.clients_export?.nom_client || '-'}</span>
+            cell: ({ row }) => <span className="text-sm font-semibold text-foreground px-1">{row.original.clients_export?.nom_client || '-'}</span>
         },
         {
-            accessorKey: 'numero_contrat',
-            header: 'N° Contrat',
-            cell: ({ row }) => <span className="text-muted-foreground font-mono text-[10px]">{row.original.numero_contrat || '-'}</span>
+            accessorKey: 'contract_info',
+            header: 'Contrat / Signature',
+            cell: ({ row }) => (
+                <div className="flex flex-col py-1">
+                    <span className="text-xs font-mono font-medium text-foreground">{row.original.numero_contrat || row.original.reference_contrat || '-'}</span>
+                    <span className="text-[11px] text-muted-foreground/80 mt-0.5">{row.original.date_signature ? new Date(row.original.date_signature).toLocaleDateString() : 'Non signé'}</span>
+                </div>
+            )
         },
         {
-            accessorKey: 'prix_caf_deblocage',
-            header: 'PRIX CAF / DÉBLOCAGE',
-            cell: ({ row }) => <span className="text-muted-foreground">{row.original.prix_caf_deblocage || '-'}</span>
+            accessorKey: 'cv_info',
+            header: 'N° CV / Produit',
+            cell: ({ row }) => (
+                <div className="flex flex-col py-1">
+                    <span className="text-sm font-bold text-foreground">{row.original.numero_cv || '-'}</span>
+                    <span className="text-xs text-muted-foreground truncate max-w-[150px] mt-0.5" title={row.original.produit}>{row.original.produit || '-'}</span>
+                </div>
+            )
         },
         {
-            accessorKey: 'drd',
-            header: 'DRD',
-            cell: ({ row }) => <span className="text-muted-foreground">{row.original.drd || '-'}</span>
+            accessorKey: 'volume_mt',
+            header: 'Volume (MT)',
+            cell: ({ row }) => <span className="text-sm font-bold text-primary">{row.original.volume_mt ? `${row.original.volume_mt} MT` : '-'}</span>
         },
         {
-            accessorKey: 'taux_reversement',
-            header: 'TAUX REVERSEMENT',
-            cell: ({ row }) => <span className="text-xs">{row.original.taux_reversement || '-'}</span>
+            accessorKey: 'prix_info',
+            header: 'Prix / Incoterm',
+            cell: ({ row }) => (
+                <div className="flex flex-col py-1">
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-emerald-600">{row.original.prix_unitaire || '-'} {row.original.devise || 'EUR'}</span>
+                        <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-bold border-primary/30">{row.original.incoterm || 'FOB'}</Badge>
+                    </div>
+                    <span className="text-xs text-muted-foreground mt-0.5">{row.original.campagne || '-'}</span>
+                </div>
+            )
         },
         {
-            accessorKey: 'taux_soutien',
-            header: 'TAUX SOUTIEN',
-            cell: ({ row }) => <span className="text-xs">{row.original.taux_soutien || '-'}</span>
+            accessorKey: 'shipment_period',
+            header: 'Shipment',
+            cell: ({ row }) => <Badge variant="secondary" className="text-[10px] font-semibold">{row.original.shipment_period || '-'}</Badge>
+        },
+        {
+            accessorKey: 'finances',
+            header: 'Finance (CAF / DRD)',
+            cell: ({ row }) => (
+                <div className="flex flex-col py-1">
+                    <span className="text-xs font-semibold text-foreground">{row.original.prix_caf_deblocage ? `${row.original.prix_caf_deblocage} CAF` : '-'}</span>
+                    <span className="text-[11px] text-muted-foreground border-l-2 border-primary/20 pl-2 mt-1" title="Différentiel de Revenu Décent">{row.original.drd ? `${row.original.drd} DRD` : '-'}</span>
+                </div>
+            )
         },
         {
             accessorKey: 'statut_contrat',
-            header: 'STATUT CONTRAT',
+            header: 'Statut',
             cell: ({ row }) => {
-                if (!row.original.statut_contrat) return <span className="text-[10px] text-muted-foreground">N/A</span>;
-                return <Badge variant={row.original.statut_contrat === 'REVERSEMENT' ? 'success' : 'outline'}>{row.original.statut_contrat}</Badge>
+                const status = row.original.statut_contrat;
+                if (!status) return <span className="text-xs text-muted-foreground italic">N/A</span>;
+                return (
+                    <Badge 
+                        variant={status === 'REVERSEMENT' ? 'success' : 'outline'} 
+                        className={`text-[10px] font-bold tracking-wider ${status === 'REVERSEMENT' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : ''}`}
+                    >
+                        {status}
+                    </Badge>
+                );
             }
+        },
+        {
+            accessorKey: 'documents',
+            header: 'Logistique & Docs',
+            cell: ({ row }) => (
+                <div className="flex flex-col gap-1.5 py-1">
+                    <div className="flex gap-3 mb-0.5">
+                        {row.original.fichier_contrat_url && (
+                            <a href={row.original.fichier_contrat_url} target="_blank" rel="noopener noreferrer" title="Contrat Signé" className="text-primary hover:scale-110 transition-transform">
+                                <FileText size={18} />
+                            </a>
+                        )}
+                        {row.original.fichier_cv_url && (
+                            <a href={row.original.fichier_cv_url} target="_blank" rel="noopener noreferrer" title="CV Signé" className="text-blue-600 hover:scale-110 transition-transform">
+                                <CheckCircle size={18} />
+                            </a>
+                        )}
+                    </div>
+                    <div className="grid grid-cols-2 gap-x-3 text-[10px] leading-tight text-muted-foreground border-t border-border/40 pt-1.5">
+                        <span className="truncate whitespace-nowrap">Q: {row.original.quality_assessment || '-'}</span>
+                        <span className="truncate whitespace-nowrap">W: {row.original.weight_condition || '-'}</span>
+                        <span className="truncate whitespace-nowrap">P: {row.original.packing || '-'}</span>
+                        <span className="truncate whitespace-nowrap">$: {row.original.payment_condition || '-'}</span>
+                    </div>
+                </div>
+            )
         }
     ], []);
 
@@ -740,7 +861,6 @@ export const PartnersPage = () => {
             {/* Header */}
             <div className="flex items-center justify-between shrink-0">
                 <div>
-                    <h2 className="text-2xl font-bold tracking-tight">Réseau & Partenaires</h2>
                     <p className="text-muted-foreground">Gérez vos relations contractuelles et vos approvisionnements.</p>
                 </div>
             </div>
@@ -1523,20 +1643,38 @@ export const PartnersPage = () => {
                                     {table.getVisibleLeafColumns().filter(col => col.id !== 'select').map(column => {
                                         let content = null;
                                         switch (column.id) {
+                                            case 'logo':
+                                                content = <input type="file" accept="image/*" onChange={e => setNewClientData({...newClientData, logoFile: e.target.files[0]})} className="w-full text-[10px]" />;
+                                                break;
                                             case 'nom_client':
-                                                content = <input autoFocus type="text" placeholder="Nom..." value={newClientData.nom_client || ''} onChange={e => setNewClientData({...newClientData, nom_client: e.target.value})} className="w-full h-8 px-2 text-xs bg-background border border-input rounded outline-none focus:ring-1 focus:ring-primary focus:border-primary" />;
-                                                break;
-                                            case 'id_rainforest':
-                                                content = <input type="text" placeholder="RA ID..." value={newClientData.id_rainforest || ''} onChange={e => setNewClientData({...newClientData, id_rainforest: e.target.value})} className="w-full h-8 px-2 text-xs bg-background border border-input rounded outline-none focus:ring-1 focus:ring-primary focus:border-primary" />;
-                                                break;
-                                            case 'id_fairtrade':
-                                                content = <input type="text" placeholder="FLO ID..." value={newClientData.id_fairtrade || ''} onChange={e => setNewClientData({...newClientData, id_fairtrade: e.target.value})} className="w-full h-8 px-2 text-xs bg-background border border-input rounded outline-none focus:ring-1 focus:ring-primary focus:border-primary" />;
+                                                content = <input autoFocus type="text" placeholder="Nom..." value={newClientData.nom_client || ''} onChange={e => setNewClientData({...newClientData, nom_client: e.target.value})} className="w-full h-8 px-2 text-xs bg-background border border-input rounded" />;
                                                 break;
                                             case 'contact_commercial':
-                                                content = <input type="text" placeholder="Contact..." value={newClientData.contact_commercial || ''} onChange={e => setNewClientData({...newClientData, contact_commercial: e.target.value})} className="w-full h-8 px-2 text-xs bg-background border border-input rounded outline-none focus:ring-1 focus:ring-primary focus:border-primary" />;
+                                                content = (
+                                                    <div className="flex flex-col gap-1">
+                                                        <input type="text" placeholder="Nom contact..." value={newClientData.contact_commercial || ''} onChange={e => setNewClientData({...newClientData, contact_commercial: e.target.value})} className="w-full h-7 px-2 text-[10px] bg-background border border-input rounded" />
+                                                        <input type="email" placeholder="Email contact..." value={newClientData.email_contact_commercial || ''} onChange={e => setNewClientData({...newClientData, email_contact_commercial: e.target.value})} className="w-full h-7 px-2 text-[10px] bg-background border border-input rounded" />
+                                                    </div>
+                                                );
+                                                break;
+                                            case 'ids_certif':
+                                                content = (
+                                                    <div className="flex flex-col gap-1">
+                                                        <input type="text" placeholder="RA ID..." value={newClientData.id_rainforest || ''} onChange={e => setNewClientData({...newClientData, id_rainforest: e.target.value})} className="w-full h-7 px-2 text-[10px] bg-background border border-input rounded font-mono" />
+                                                        <input type="text" placeholder="FLO ID..." value={newClientData.id_fairtrade || ''} onChange={e => setNewClientData({...newClientData, id_fairtrade: e.target.value})} className="w-full h-7 px-2 text-[10px] bg-background border border-input rounded font-mono" />
+                                                    </div>
+                                                );
+                                                break;
+                                            case 'responsable_durabilite':
+                                                content = (
+                                                    <div className="flex flex-col gap-1">
+                                                        <input type="text" placeholder="Nom resp. durab..." value={newClientData.nom_responsable_durabilite || ''} onChange={e => setNewClientData({...newClientData, nom_responsable_durabilite: e.target.value})} className="w-full h-7 px-2 text-[10px] bg-background border border-input rounded" />
+                                                        <input type="email" placeholder="Email resp. durab..." value={newClientData.email_responsable_durabilite || ''} onChange={e => setNewClientData({...newClientData, email_responsable_durabilite: e.target.value})} className="w-full h-7 px-2 text-[10px] bg-background border border-input rounded" />
+                                                    </div>
+                                                );
                                                 break;
                                             case 'adresse':
-                                                content = <input type="text" placeholder="Adresse..." value={newClientData.adresse || ''} onChange={e => setNewClientData({...newClientData, adresse: e.target.value})} className="w-full h-8 px-2 text-xs bg-background border border-input rounded outline-none focus:ring-1 focus:ring-primary focus:border-primary" />;
+                                                content = <input type="text" placeholder="Adresse..." value={newClientData.adresse || ''} onChange={e => setNewClientData({...newClientData, adresse: e.target.value})} className="w-full h-8 px-2 text-xs bg-background border border-input rounded" />;
                                                 break;
                                         }
                                         return <td key={column.id} className="p-2 align-middle border-r border-border/40 last:border-r-0">{content}</td>;
@@ -1560,12 +1698,13 @@ export const PartnersPage = () => {
             {/* TAB CONTENT: CLIENTS (Contrats Commercialisation) */}
             {mainTab === 'clients' && subTab === 'contrats_commercialisation' && (
                 <div className="border border-border/50 rounded-xl overflow-hidden bg-card shadow-sm h-full flex flex-col mt-4 overflow-x-auto">
-                    <DataGrid
-                        data={exportContracts}
-                        columns={exportContractColumns}
-                        title=""
-                        hideToolbar={false}
-                        className="m-0"
+                    <div className="min-w-[1400px]">
+                        <DataGrid
+                            data={exportContracts}
+                            columns={exportContractColumns}
+                            title=""
+                            hideToolbar={false}
+                            className="m-0"
                         renderAppendixRow={({ table }) => {
                             if (!isAddingExportContract) return (
                                 <tr>
@@ -1597,29 +1736,112 @@ export const PartnersPage = () => {
                                                     </select>
                                                 );
                                                 break;
-                                            case 'numero_contrat':
-                                                content = <input type="text" placeholder="Auto..." value={newExportContractData.numero_contrat || ''} onChange={e => setNewExportContractData({...newExportContractData, numero_contrat: e.target.value})} className="w-full h-8 px-1 text-[10px] bg-background border border-input rounded" />;
+                                            case 'contract_info':
+                                                content = (
+                                                    <div className="flex flex-col gap-1.5 py-1">
+                                                        <input type="text" placeholder="N° Contrat" value={newExportContractData.numero_contrat || ''} onChange={e => setNewExportContractData({...newExportContractData, numero_contrat: e.target.value})} className="w-full h-8 px-2 text-[11px] bg-background border border-input rounded shadow-sm focus:border-primary" />
+                                                        <div className="flex flex-col gap-1">
+                                                            <span className="text-[9px] text-muted-foreground font-semibold px-1 uppercase">Date signature</span>
+                                                            <input type="date" value={newExportContractData.date_signature || ''} onChange={e => setNewExportContractData({...newExportContractData, date_signature: e.target.value})} className="w-full h-8 px-2 text-[11px] bg-background border border-input rounded" />
+                                                        </div>
+                                                        <div className="flex flex-col gap-1 mt-1">
+                                                            <span className="text-[9px] text-muted-foreground font-semibold px-1 uppercase leading-none">PDF Contrat</span>
+                                                            <input type="file" accept=".pdf" onChange={e => setNewExportContractData({...newExportContractData, contractFile: e.target.files[0]})} className="w-full text-[9px] file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[9px] file:bg-primary/10 file:text-primary" />
+                                                        </div>
+                                                    </div>
+                                                );
                                                 break;
-                                            case 'prix_caf_deblocage':
-                                                content = <input type="number" step="0.01" placeholder="Prix CAF" value={newExportContractData.prix_caf_deblocage || ''} onChange={e => setNewExportContractData({...newExportContractData, prix_caf_deblocage: e.target.value})} className="w-full h-8 px-1 text-[10px] bg-background border border-input rounded" />;
+                                            case 'cv_info':
+                                                content = (
+                                                    <div className="flex flex-col gap-1.5 py-1">
+                                                        <input type="text" placeholder="N° Conf. Vente" value={newExportContractData.numero_cv || ''} onChange={e => setNewExportContractData({...newExportContractData, numero_cv: e.target.value})} className="w-full h-8 px-2 text-[11px] bg-background border border-input rounded shadow-sm" />
+                                                        <select value={newExportContractData.produit || ''} onChange={e => setNewExportContractData({...newExportContractData, produit: e.target.value})} className="w-full h-8 px-2 text-[11px] bg-background border border-input rounded">
+                                                            <option value="">Produit...</option>
+                                                            <option value="Cocoa beans, CI Fermented">Cocoa beans, CI Fermented</option>
+                                                            <option value="Certified cocoa beans, CI Fermented">Certified cocoa beans, CI Fermented</option>
+                                                        </select>
+                                                        <div className="flex flex-col gap-1 mt-1">
+                                                            <span className="text-[9px] text-muted-foreground font-semibold px-1 uppercase leading-none">PDF Signature CV</span>
+                                                            <input type="file" accept=".pdf" onChange={e => setNewExportContractData({...newExportContractData, cvFile: e.target.files[0]})} className="w-full text-[9px] file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[9px] file:bg-blue-50 file:text-blue-600" />
+                                                        </div>
+                                                    </div>
+                                                );
                                                 break;
-                                            case 'drd':
-                                                content = <input type="number" step="0.01" placeholder="DRD" value={newExportContractData.drd || ''} onChange={e => setNewExportContractData({...newExportContractData, drd: e.target.value})} className="w-full h-8 px-1 text-[10px] bg-background border border-input rounded" />;
+                                            case 'volume_mt':
+                                                content = <input type="number" step="0.01" placeholder="Volume (MT)" value={newExportContractData.volume_mt || ''} onChange={e => setNewExportContractData({...newExportContractData, volume_mt: e.target.value})} className="w-full h-8 px-1 text-[10px] bg-background border border-input rounded" />;
                                                 break;
-                                            case 'taux_reversement':
-                                                content = <input type="number" step="0.01" placeholder="%" value={newExportContractData.taux_reversement || ''} onChange={e => setNewExportContractData({...newExportContractData, taux_reversement: e.target.value})} className="w-full h-8 px-1 text-[10px] bg-background border border-input rounded" />;
+                                            case 'prix_info':
+                                                content = (
+                                                    <div className="flex flex-col gap-1.5 py-1">
+                                                        <div className="flex gap-1">
+                                                            <input type="number" step="0.01" placeholder="Prix" value={newExportContractData.prix_unitaire || ''} onChange={e => setNewExportContractData({...newExportContractData, prix_unitaire: e.target.value})} className="w-full h-8 px-2 text-[11px] font-bold text-emerald-600 bg-background border border-input rounded" />
+                                                            <select value={newExportContractData.devise || 'EUR'} onChange={e => setNewExportContractData({...newExportContractData, devise: e.target.value})} className="h-8 text-[10px] font-semibold bg-background border border-input rounded min-w-[55px]">
+                                                                <option value="EUR">EUR</option>
+                                                                <option value="USD">USD</option>
+                                                                <option value="XOF">XOF</option>
+                                                            </select>
+                                                        </div>
+                                                        <div className="flex gap-1">
+                                                            <select value={newExportContractData.incoterm || 'FOB'} onChange={e => setNewExportContractData({...newExportContractData, incoterm: e.target.value})} className="w-full h-8 text-[10px] font-semibold bg-background border border-input rounded">
+                                                                <option value="FOB">FOB</option>
+                                                                <option value="CIF">CIF</option>
+                                                                <option value="CFR">CFR</option>
+                                                            </select>
+                                                            <select value={newExportContractData.campagne || ''} onChange={e => setNewExportContractData({...newExportContractData, campagne: e.target.value})} className="w-full h-8 text-[10px] bg-background border border-input rounded">
+                                                                <option value="">Campagne...</option>
+                                                                {campaignsList.map(camp => (
+                                                                    <option key={camp.id} value={camp.libelle}>{camp.libelle}</option>
+                                                                ))}
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                );
                                                 break;
-                                            case 'taux_soutien':
-                                                content = <input type="number" step="0.01" placeholder="%" value={newExportContractData.taux_soutien || ''} onChange={e => setNewExportContractData({...newExportContractData, taux_soutien: e.target.value})} className="w-full h-8 px-1 text-[10px] bg-background border border-input rounded" disabled={newExportContractData.taux_reversement > 0} />;
+                                            case 'quantite_a_executer':
+                                                content = <input type="number" step="0.01" placeholder="Qté (MT)" value={newExportContractData.quantite_a_executer || ''} onChange={e => setNewExportContractData({...newExportContractData, quantite_a_executer: e.target.value})} className="w-full h-8 px-1 text-[10px] bg-background border border-input rounded" />;
+                                                break;
+                                            case 'shipment_period':
+                                                content = (
+                                                    <select value={newExportContractData.shipment_period || ''} onChange={e => setNewExportContractData({...newExportContractData, shipment_period: e.target.value})} className="w-full h-8 px-1 text-[10px] bg-background border border-input rounded">
+                                                        <option value="">Shipment...</option>
+                                                        {['Q1-Janv-Mars', 'Q2-Avril-Juin', 'Q3-Juil-Sept', 'Q4-Oct-Dec'].map(q => <option key={q} value={q}>{q}</option>)}
+                                                    </select>
+                                                );
+                                                break;
+                                            case 'finances':
+                                                content = (
+                                                    <div className="flex flex-col gap-1.5 py-1">
+                                                        <input type="number" step="0.01" placeholder="CAF (Financ.)" value={newExportContractData.prix_caf_deblocage || ''} onChange={e => setNewExportContractData({...newExportContractData, prix_caf_deblocage: e.target.value})} className="w-full h-8 px-2 text-[11px] font-medium bg-background border border-input rounded" />
+                                                        <input type="number" step="0.01" placeholder="DRD (Rev. Décent)" value={newExportContractData.drd || ''} onChange={e => setNewExportContractData({...newExportContractData, drd: e.target.value})} className="w-full h-8 px-2 text-[11px] font-medium bg-background border border-input rounded" />
+                                                    </div>
+                                                );
                                                 break;
                                             case 'statut_contrat':
-                                                let statut = 'INCONNU';
-                                                const rev = newExportContractData.taux_reversement ? parseFloat(newExportContractData.taux_reversement) : null;
-                                                const sou = newExportContractData.taux_soutien ? parseFloat(newExportContractData.taux_soutien) : null;
-                                                if ((!rev || rev === 0) && sou !== null && sou < 0) statut = 'SOUTIEN';
-                                                else if (rev !== null && rev > 0) statut = 'REVERSEMENT';
-                                                
-                                                content = <span className="text-[10px] ml-2 font-medium">{statut === 'INCONNU' ? '-' : <Badge variant={statut === 'REVERSEMENT' ? 'success' : 'outline'}>{statut}</Badge>}</span>;
+                                                content = (
+                                                    <div className="flex flex-col gap-1">
+                                                        <input type="number" step="0.01" placeholder="Rev. %" value={newExportContractData.taux_reversement || ''} onChange={e => setNewExportContractData({...newExportContractData, taux_reversement: e.target.value})} className="w-full h-7 px-1 text-[9px] bg-background border border-input rounded" />
+                                                        <input type="number" step="0.01" placeholder="Sout. %" value={newExportContractData.taux_soutien || ''} onChange={e => setNewExportContractData({...newExportContractData, taux_soutien: e.target.value})} className="w-full h-7 px-1 text-[9px] bg-background border border-input rounded" disabled={newExportContractData.taux_reversement > 0} />
+                                                    </div>
+                                                );
+                                                break;
+                                            case 'documents':
+                                                content = (
+                                                    <div className="flex flex-col gap-1">
+                                                        <select value={newExportContractData.quality_assessment || ''} onChange={e => setNewExportContractData({...newExportContractData, quality_assessment: e.target.value})} className="w-full h-6 px-1 text-[8px] bg-background border border-input rounded">
+                                                            <option value="">Qualité...</option>
+                                                            <option value="On departure during stuffing">On departure</option>
+                                                            <option value="At arrival">At arrival</option>
+                                                        </select>
+                                                        <select value={newExportContractData.weight_condition || ''} onChange={e => setNewExportContractData({...newExportContractData, weight_condition: e.target.value})} className="w-full h-6 px-1 text-[8px] bg-background border border-input rounded">
+                                                            <option value="">Poids...</option>
+                                                            <option value="Weight landed">Weight landed</option>
+                                                            <option value="Shipped weight">Shipped weight</option>
+                                                            <option value="Net landed weight">Net landed weight</option>
+                                                        </select>
+                                                        <input type="text" placeholder="Packing..." value={newExportContractData.packing || ''} onChange={e => setNewExportContractData({...newExportContractData, packing: e.target.value})} className="w-full h-6 px-1 text-[8px] bg-background border border-input rounded" />
+                                                        <input type="text" placeholder="Payment..." value={newExportContractData.payment_condition || ''} onChange={e => setNewExportContractData({...newExportContractData, payment_condition: e.target.value})} className="w-full h-6 px-1 text-[8px] bg-background border border-input rounded" />
+                                                    </div>
+                                                );
                                                 break;
                                         }
                                         return <td key={column.id} className="p-1 align-middle border-r border-border/40 last:border-r-0">{content}</td>;
@@ -1637,6 +1859,7 @@ export const PartnersPage = () => {
                             </button>
                         </div>
                     )}
+                    </div>
                 </div>
             )}
 

@@ -61,7 +61,6 @@ export const FinanceDashboard = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-            <h2 className="text-2xl font-bold tracking-tight">Finance & Nantissements</h2>
             <p className="text-muted-foreground">Gestion des lignes de crédit et du stock en tierce détention.</p>
         </div>
         <Button className="gap-2">

@@ -13,12 +13,10 @@ export const ReceptionsPage = () => {
                     <Truck size={32} className="text-primary" />
                 </div>
                 <div>
-                    <h2 className="text-2xl font-bold tracking-tight">Réceptions & Stocks</h2>
-                    <p className="text-muted-foreground">Gestion des entrées de matières premières (Déclaré vs Validé CCC)</p>
+                    <p className="text-muted-foreground">Gestion des receptions et stocks</p>
                 </div>
             </div>
 
-            {/* Tabs Header */}
             <div className="px-4 border-b flex items-center gap-6">
                 <button
                     onClick={() => setActiveTab('declared')}
@@ -28,7 +26,7 @@ export const ReceptionsPage = () => {
                         }`}
                 >
                     <ClipboardList size={18} />
-                    Volumes Déclarés (Fournisseurs)
+                    Volumes Declares
                 </button>
 
                 <button
@@ -39,11 +37,10 @@ export const ReceptionsPage = () => {
                         }`}
                 >
                     <FileCheck size={18} />
-                    Volumes Acceptés (CCC)
+                    Volumes Acceptes
                 </button>
             </div>
 
-            {/* Tabs Content */}
             <div className="flex-1 overflow-hidden">
                 {activeTab === 'declared' && <DeclaredVolumesView />}
                 {activeTab === 'accepted' && <CCCImportsView />}

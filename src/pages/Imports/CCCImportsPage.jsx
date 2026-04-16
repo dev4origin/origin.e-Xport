@@ -77,7 +77,6 @@ export const CCCImportsPage = () => {
                         <FileSpreadsheet size={32} className="text-primary" />
                     </div>
                     <div>
-                        <h2 className="text-2xl font-bold tracking-tight">Import Reçus CCC</h2>
                         <p className="text-muted-foreground">Intégration des fichiers Excel "IdxRecepjournalier"</p>
                     </div>
                 </div>
